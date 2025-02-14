@@ -1,46 +1,36 @@
-// server.js
+
+// This will be the node Express server that will serve up your app
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
+const PORT = process.env.PORT || 3030;
+const path = require('path');
+// these are some of the libraries you will need
 
-// Use express.json() middleware to parse JSON bodies.
-app.use(express.json());
+// Array to hold the form data
+let formData = [];
 
-// Serve static files (HTML, CSS, client-side JavaScript) from the "public" directory.
-app.use(express.static('public'));
+// This will allow us to parse the body of POST requests
+app.use(bodyParser.json());
 
-// In-memory storage for messages
-let messages = [];
-
-/**
- * GET /messages
- * Returns a JSON object containing all messages.
- */
-app.get('/messages', (req, res) => {
-  res.json({ messages });
+// Serve the web page with the form
+app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/public/index.html');
 });
 
-/**
- * POST /messages
- * Expects a JSON payload with "username" and "message".
- * Adds the new message to the messages array.
- */
-app.post('/messages', (req, res) => {
-  const { username, message } = req.body;
-  if (!username || !message) {
-    return res.status(400).json({ error: 'Both username and message are required.' });
-  }
-  // Optionally, include a timestamp for each message.
-  const newMessage = {
-    username,
-    message,
-    timestamp: Date.now()
-  };
-  messages.push(newMessage);
-  res.status(201).json({ success: true });
+// Handle the form submission via fetch
+app.post('/input', (req, res) => {
+    const { name, reactionTime, submissionDate } = req.body;
+
+    // No need to escape here, you trust the client
+    // Add the new user to the array
+    formData.push({ name, reactionTime, submissionDate });
+
+    // Send the updated list of users back as JSON
+    res.json(formData);
 });
 
-// Define the port (default to 3000 if not specified).
-const PORT = process.env.PORT || 3000;
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}/`);
 });
