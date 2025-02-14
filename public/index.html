@@ -68,51 +68,75 @@
                 <button type="submit" id="submit-button" class="btn btn-primary" onclick="submitEvent(event)">Submit</button>
             </div>
         </form>
-        <h4 class="bg-light text-dark">Users ranked by reaction time: (User - Reaction Time - Timestamp)</h4>
+        <h4 class="bg-light text-dark">Users ranked by reaction time</h4>
         <ul id="userList" class="list-group bg-light text-dark">
             <!-- User list will be populated here -->
         </ul>
     </div>
     <script>
       let startTime;
-    let endTime;
-    let timeoutId;
-    const Name = document.getElementById('name-input').value;
-    function startTheTime() {
-        document.getElementById('result').textContent = '';
-        const startButton = document.getElementById('start-button');
-        startButton.disabled = true;
-        startButton.textContent = 'Wait for it...';
-        startButton.classList.remove('btn-primary');
-        startButton.classList.add('btn-warning');
+      let endTime;
+      let timeoutId;
+      const reactionTimes = [];
 
-        const randomDelay = Math.floor(Math.random() * 10000) + 1000; // Random delay between 1 to 10 seconds
+      function startTheTime() {
+          document.getElementById('result').textContent = '';
+          const startButton = document.getElementById('start-button');
+          startButton.disabled = true;
+          startButton.textContent = 'Wait for it...';
+          startButton.classList.remove('btn-primary');
+          startButton.classList.add('btn-warning');
 
-        timeoutId = setTimeout(() => {
-            startTime = new Date().getTime();
-            startButton.textContent = 'Click Now!';
-            startButton.classList.remove('btn-warning');
-            startButton.classList.add('btn-success');
-            startButton.disabled = false;
-            startButton.onclick = recordReaction;
-        }, randomDelay);
-    }
+          const randomDelay = Math.floor(Math.random() * 10000) + 1000; // Random delay between 1 to 10 seconds
 
-    function recordReaction() {
-        endTime = new Date().getTime();
-        const reactionTime = (endTime - startTime) / 1000;
-        const name = document.getElementById('name-input').value;
-        document.getElementById('result').innerHTML = `Hi ${name},<br>your reaction time is ${reactionTime} seconds`;
+          timeoutId = setTimeout(() => {
+              startTime = new Date().getTime();
+              startButton.textContent = 'Click Now!';
+              startButton.classList.remove('btn-warning');
+              startButton.classList.add('btn-success');
+              startButton.disabled = false;
+              startButton.onclick = recordReaction;
+          }, randomDelay);
+      }
 
-        const startButton = document.getElementById('start-button');
-        startButton.textContent = 'Start';
-        startButton.classList.remove('btn-success');
-        startButton.classList.add('btn-primary');
-        startButton.onclick = startTheTime;
-    }
+      function recordReaction() {
+          endTime = new Date().getTime();
+          const reactionTime = (endTime - startTime) / 1000;
+          const name = document.getElementById('name-input').value;
+          document.getElementById('result').innerHTML = `Hi ${name},<br>your reaction time is ${reactionTime} seconds`;
 
-    function submitEvent(event) {
-        event.preventDefault();
-        // Add your submit logic here
-    }
-        </script>
+          // Store the reaction time and name
+          const timestamp = new Date().toLocaleString();
+          reactionTimes.push({ name, reactionTime, timestamp });
+
+          // Update the user list
+          updateUserList();
+
+          const startButton = document.getElementById('start-button');
+          startButton.textContent = 'Start';
+          startButton.classList.remove('btn-success');
+          startButton.classList.add('btn-primary');
+          startButton.onclick = startTheTime;
+      }
+
+      function updateUserList() {
+          const userList = document.getElementById('userList');
+          userList.innerHTML = '';
+
+          reactionTimes.sort((a, b) => a.reactionTime - b.reactionTime);
+
+          reactionTimes.forEach(entry => {
+              const listItem = document.createElement('li');
+              listItem.className = 'list-group-item';
+              listItem.textContent = `${entry.name} - ${entry.reactionTime} seconds - ${entry.timestamp}`;
+              userList.appendChild(listItem);
+          });
+      }
+
+      function submitEvent(event) {
+          event.preventDefault();
+          // Add your submit logic here
+      }
+    </script>
+</body>
+</html>
