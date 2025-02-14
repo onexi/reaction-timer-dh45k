@@ -1,154 +1,142 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
-<html>
-  <head>
+<html data-bs-theme="light">
+<head>
     <meta charset="utf-8" />
-    <title>Messenger App (async/await)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Submit Your Details</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
     <style>
-      /* Basic styling for the messenger app */
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f2f2f2;
-        margin: 0;
-        padding: 0;
-      }
-      #chat {
-        width: 500px;
-        margin: 50px auto;
-        background-color: #fff;
-        border: 1px solid #ccc;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      }
-      #messages {
-        list-style-type: none;
-        padding: 0;
-        max-height: 300px;
-        overflow-y: auto;
-        margin-bottom: 20px;
-      }
-      #messages li {
-        padding: 8px 10px;
-        border-bottom: 1px solid #eee;
-      }
-      .input-container {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-      }
-      .input-container input[type="text"] {
-        flex: 1;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-      }
-      #sendBtn {
-        padding: 10px 20px;
-        border: none;
-        background-color: #007bff;
-        color: #fff;
-        border-radius: 3px;
-        cursor: pointer;
-      }
-      #sendBtn:hover {
-        background-color: #0056b3;
-      }
+        .btn-warning {
+            width: 750px;
+            height: 75px;
+            font-size: 12px;
+            overflow: hidden; /* Hide overflow if text is too large */
+            white-space: nowrap; /* Prevent text from wrapping */
+            text-overflow: ellipsis; /* Add ellipsis if text overflows */
+        }
+        .btn-success {
+            width: 750px;
+            height: 75px;
+            font-size: 12px;
+            overflow: hidden; /* Hide overflow if text is too large */
+            white-space: nowrap; /* Prevent text from wrapping */
+            text-overflow: ellipsis; /* Add ellipsis if text overflows */
+        }
+        .btn-danger {
+            width: 750px;
+            height: 75px;
+            font-size: 12px;
+            overflow: hidden; /* Hide overflow if text is too large */
+            white-space: nowrap; /* Prevent text from wrapping */
+            text-overflow: ellipsis; /* Add ellipsis if text overflows */
+        }
+        /* Container to center the button */
+        .button_container {
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            width: 100%;
+            height: 100%;
+        }
     </style>
-  </head>
-  <body>
-    <div id="chat">
-      <ul id="messages"></ul>
-      <!-- Input fields (without using a <form> element) -->
-      <div class="input-container">
-        <input id="username" type="text" placeholder="Your name" required />
-      </div>
-      <div class="input-container">
-        <input
-          id="message"
-          type="text"
-          placeholder="Type your message"
-          required
-          autocomplete="off"
-        />
-        <button id="sendBtn" type="button">Send</button>
-      </div>
+</head>
+<body class="bg-light text-dark">
+    <div class="container mt-5">
+        <h1 class="text-center">Reaction Timer</h1>
+        <form id="dataForm" class="bg-light text-dark">
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <input type="text" id="name-input" class="form-control bg-light text-dark" required>
+            </div>
+            <div class="mb-2">
+                <label for="start" id="text-label" class="form-label">Click to Start</label>
+                <br />
+                <div class="button_container">
+                    <button type="button" id="start-button" class="btn btn-primary" onclick="startTheTime()">Start</button>
+                </div>
+                <br />
+            </div>           
+            <div class="mb-1">
+                <label for="reactiontime" class="form-label"></label>
+                <p id="result"></p>
+                <br />
+                <button type="submit" id="submit-button" class="btn btn-primary" onclick="submitEvent(event)">Submit</button>
+            </div>
+        </form>
+        <h4 class="bg-light text-dark">Users ranked by reaction time</h4>
+        <ul id="userList" class="list-group bg-light text-dark">
+            <!-- User list will be populated here -->
+        </ul>
     </div>
-
     <script>
-      // DOM element references
-      const usernameInput = document.getElementById("username");
-      const messageInput = document.getElementById("message");
-      const sendBtn = document.getElementById("sendBtn");
-      const messagesList = document.getElementById("messages");
+      let startTime;
+      let endTime;
+      let timeoutId;
+      const reactionTimes = [];
 
-      /**
-       * Asynchronously fetches all messages from the server and updates the messages list.
-       */
-      async function fetchMessages() {
-        try {
-          const response = await fetch("/messages");
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          const data = await response.json();
-          // Clear and update the messages list
-          messagesList.innerHTML = "";
-          data.messages.forEach((msg) => {
-            const li = document.createElement("li");
-            li.textContent = `${msg.username}: ${msg.message}`;
-            messagesList.appendChild(li);
-          });
-          // Scroll to the bottom of the list
-          messagesList.scrollTop = messagesList.scrollHeight;
-        } catch (error) {
-          console.error("Error fetching messages:", error);
-        }
+      function startTheTime() {
+          document.getElementById('result').textContent = '';
+          const startButton = document.getElementById('start-button');
+          startButton.disabled = true;
+          startButton.textContent = 'Wait for it...';
+          startButton.classList.remove('btn-primary');
+          startButton.classList.add('btn-warning');
+
+          const randomDelay = Math.floor(Math.random() * 10000) + 1000; // Random delay between 1 to 10 seconds
+
+          timeoutId = setTimeout(() => {
+              startTime = new Date().getTime();
+              startButton.textContent = 'Click Now!';
+              startButton.classList.remove('btn-warning');
+              startButton.classList.add('btn-success');
+              startButton.disabled = false;
+              startButton.onclick = recordReaction;
+          }, randomDelay);
       }
 
-      /**
-       * Asynchronously sends a new message to the server.
-       */
-      async function sendMessage() {
-        const username = usernameInput.value.trim();
-        const message = messageInput.value.trim();
+      function recordReaction() {
+          endTime = new Date().getTime();
+          const reactionTime = (endTime - startTime) / 1000;
+          const name = document.getElementById('name-input').value;
+          document.getElementById('result').innerHTML = `Hi ${name},<br>your reaction time is ${reactionTime} seconds`;
 
-        // Do not send if username or message is empty.
-        if (!username || !message) {
-          return;
-        }
+          // Store the reaction time and name
+          const timestamp = new Date().toLocaleString();
+          reactionTimes.push({ name, reactionTime, timestamp });
 
-        try {
-          const response = await fetch("/messages", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, message }),
-          });
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          // Clear the message input after a successful send
-          messageInput.value = "";
-        } catch (error) {
-          console.error("Error sending message:", error);
-        }
+          // Update the user list
+          updateUserList();
+
+          const startButton = document.getElementById('start-button');
+          startButton.textContent = 'Start';
+          startButton.classList.remove('btn-success');
+          startButton.classList.add('btn-primary');
+          startButton.onclick = startTheTime;
       }
 
-      // Listen for a click event on the Send button.
-      sendBtn.addEventListener("click", sendMessage);
+      function updateUserList() {
+          const userList = document.getElementById('userList');
+          userList.innerHTML = '';
 
-      // Also allow sending a message by pressing the Enter key in the message input.
-      messageInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          sendMessage();
-        }
-      });
+          reactionTimes.sort((a, b) => a.reactionTime - b.reactionTime);
 
-      // Poll for new messages every 2 seconds
-      setInterval(fetchMessages, 2000);
-      // Initial fetch on page load
-      fetchMessages();
+          reactionTimes.forEach(entry => {
+              const listItem = document.createElement('li');
+              listItem.className = 'list-group-item';
+              listItem.textContent = `${entry.name} - ${entry.reactionTime} seconds - ${entry.timestamp}`;
+              userList.appendChild(listItem);
+          });
+      }
+
+      function submitEvent(event) {
+          event.preventDefault();
+          // Add your submit logic here
+      }
     </script>
-  </body>
+</body>
 </html>
